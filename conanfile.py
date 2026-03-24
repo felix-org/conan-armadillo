@@ -13,11 +13,18 @@ class FelixarmadilloConan(ConanFile):
     build_policy = "missing"
     generators = "cmake"
 
+    def build_requirements(self):
+        # Only require the NDK when targeting Android.
+        # This prevents the "os=iOS is not supported" error during iOS builds.
+        if self.settings.os == "Android":
+            self.build_requires("android-ndk/r27")
+
     def source(self):
         git = tools.Git()
         git.clone("https://github.com/felix-org/armadillo-code.git", "9.200.1")
 
     def build(self):
+        # 1. Fix the BLAS/LAPACK configs as you already were
         tools.replace_in_file(file_path="include/armadillo_bits/config.hpp",
                               search="#define ARMA_USE_LAPACK",
                               replace="//#define ARMA_USE_LAPACK")
@@ -25,6 +32,14 @@ class FelixarmadilloConan(ConanFile):
         tools.replace_in_file(file_path="include/armadillo_bits/config.hpp",
                               search="#define ARMA_USE_BLAS",
                               replace="//#define ARMA_USE_BLAS")
+
+        # 2. Fix modern CMake compatibility (Minimum version 3.5)
+        # This replaces the old "cmake_minimum_required" with one that modern CMake accepts.
+        tools.replace_in_file(file_path="CMakeLists.txt",
+                              search="cmake_minimum_required",
+                              replace="cmake_minimum_required(VERSION 3.5) # Original: cmake_minimum_required")
+
+        # 3. Proceed with build
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
