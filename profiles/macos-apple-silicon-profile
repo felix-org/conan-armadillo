@@ -1,0 +1,18 @@
+[settings]
+os=Macos
+# armv8 is the Conan 1.x standard for Apple Silicon (M1/M2/M3)
+arch=armv8
+
+compiler=apple-clang
+# Xcode 15+ uses version 15.0
+compiler.version=15
+compiler.libcxx=libc++
+compiler.cppstd=14
+
+build_type=Release
+
+[options]
+
+[build_requires]
+# Common tools for Mac builds
+cmake/3.27.0
